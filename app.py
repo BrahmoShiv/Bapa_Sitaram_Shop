@@ -30,6 +30,7 @@ def get_orders():
                 if not search_query or search_query in row[0].lower():
                     orders.append({"item": row[0], "price": row[1], "cat": row[2]})
     return jsonify(orders)
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Render provides a 'PORT' environment variable, usually 10000
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
