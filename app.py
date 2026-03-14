@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify,send_from_directory
 from flask_cors import CORS
 import csv
 import os
@@ -8,6 +8,11 @@ CORS(app)
 
 DB_FILE = 'orders.csv'
 ADMIN_PASS = "bapa123" # Simple logic for Section 1: Discrete Math
+
+@app.route('/')
+def home():
+    # This looks for index.html in a folder named 'templates'
+    return send_from_directory('.', 'index.html') 
 
 @app.route('/place_order', methods=['POST'])
 def place_order():
