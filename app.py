@@ -11,9 +11,12 @@ ADMIN_PASS = "bapa123" # Simple logic for Section 1: Discrete Math
 
 @app.route('/')
 def home():
-    # This looks for index.html in a folder named 'templates'
-    return send_from_directory('.', 'index.html') 
-
+    # This force-reads the file from the current directory
+    try:
+        return open('index.html').read()
+    except Exception as e:
+        return f"File not found. Current directory files: {os.listdir('.')}"
+        
 @app.route('/place_order', methods=['POST'])
 def place_order():
     data = request.json
