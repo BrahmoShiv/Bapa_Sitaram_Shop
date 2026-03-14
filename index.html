@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bapa Sitaram Ayurveda | Full Digital Store</title>
+    <style>
+        :root { --primary: #1b5e20; --accent: #c6ff00; --white: #ffffff; --gray: #f4f4f4; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; background: var(--gray); }
+
+        /* HEADER & NAVIGATION */
+        nav { background: var(--primary); color: white; padding: 1rem 5%; display: flex; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .logo { font-size: 1.5rem; font-weight: 800; cursor: pointer; }
+        .search-container { flex-grow: 1; margin: 0 50px; position: relative; }
+        .search-container input { width: 100%; padding: 10px; border-radius: 20px; border: none; outline: none; }
+
+        /* LAYOUT */
+        .main-wrapper { display: flex; min-height: 100vh; }
+        .sidebar { width: 250px; background: white; padding: 20px; border-right: 1px solid #ddd; }
+        .content { flex-grow: 1; padding: 30px; }
+
+        /* PRODUCT CARDS */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
+        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: 0.3s; }
+        .card:hover { transform: translateY(-10px); }
+        .card-img { height: 150px; background: #e8f5e9; display: flex; align-items: center; justify-content: center; font-size: 50px; }
+        .card-body { padding: 20px; }
+        .badge { background: #e8f5e9; color: var(--primary); padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; }
+        .price { font-size: 1.5rem; color: var(--primary); font-weight: bold; margin: 10px 0; }
+        .btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
+        .btn:hover { background: #2e7d32; }
+
+        /* ADMIN DASHBOARD */
+        .admin-panel { display: none; background: white; padding: 30px; border-radius: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: var(--primary); color: white; }
+
+        /* FOOTER */
+        footer { background: #111; color: white; padding: 40px; text-align: center; margin-top: 40px; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo" onclick="showView('shop')">🌿 BAPA SITARAM</div>
+    <div class="search-container">
+        <input type="text" id="globalSearch" placeholder="Search for herbs (e.g. Brahmi)..." onkeyup="filterProducts()">
+    </div>
+    <div class="nav-links">
+        <button onclick="loginAdmin()" style="background:transparent; color:white; border:1px solid white; padding:5px 15px; border-radius:20px; cursor:pointer;">Admin Login</button>
+    </div>
+</nav>
+
+<div class="main-wrapper">
+    <div class="sidebar">
+        <h3>Categories</h3>
+        <p onclick="filterCategory('all')" style="cursor:pointer; color:var(--primary);">✨ All Products</p>
+        <p onclick="filterCategory('Mind')" style="cursor:pointer;">🧠 Mind Health</p>
+        <p onclick="filterCategory('Body')" style="cursor:pointer;">💪 Immunity</p>
+        <p onclick="filterCategory('Digestion')" style="cursor:pointer;">🍵 Digestion</p>
+        <hr>
+        <p><b>Location:</b> Bilimora,Navsari, Gujarat</p>
+        <p><b>Contact:+918200141305</b></p>
+        <h5 style="color:Green">Vaidya Shree Janak Gunvantrai Brahmbhatt</h5>
+    </div>
+
+    <div class="content">
+        <div id="shop-view">
+            <h1 id="view-title">Our Ayurvedic Remedies</h1>
+            <div class="grid" id="productGrid">
+                </div>
+        </div>
+
+        <div id="admin-view" class="admin-panel">
+            <h1>Manager Control Panel</h1>
+            <input type="text" id="adminSearch" placeholder="Search orders..." onkeyup="loadAdminOrders()" style="padding:10px; width:300px; margin-bottom:20px;">
+            <table>
+                <thead><tr><th>Product</th><th>Price</th><th>Category</th></tr></thead>
+                <tbody id="adminTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2026 Bapa Sitaram Ayurvedic Shop | Bilimora Road, Navsari</p>
+</footer>
+
+<script>
+    const API = "http://127.0.0.1:5000";
+    const products = [
+        {id: 1, name: "Brahmi Powder", price: 150, cat: "Mind", icon: "🧠"},
+        {id: 2, name: "Ashwagandha", price: 299, cat: "Body", icon: "💪"},
+        {id: 3, name: "Triphala Churna", price: 180, cat: "Digestion", icon: "🍵"},
+        {id: 4, name: "Shilajit Resin", price: 999, cat: "Body", icon: "💎"},
+        {id: 5, name: "Neem Tablets", price: 120, cat: "Body", icon: "🍃"}
+    ];
+
+    function renderProducts(list) {
+        const grid = document.getElementById('productGrid');
+        grid.innerHTML = list.map(p => `
+            <div class="card">
+                <div class="card-img">${p.icon}</div>
+                <div class="card-body">
+                    <span class="badge">${p.cat}</span>
+                    <h3>${p.name}</h3>
+                    <div class="price">₹${p.price}</div>
+                    <button class="btn" onclick="buy('${p.name}', ${p.price}, '${p.cat}')">ORDER NOW</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function filterProducts() {
+        const query = document.getElementById('globalSearch').value.toLowerCase();
+        const filtered = products.filter(p => p.name.toLowerCase().includes(query));
+        renderProducts(filtered);
+    }
+
+    function filterCategory(cat) {
+        if(cat === 'all') return renderProducts(products);
+        renderProducts(products.filter(p => p.cat === cat));
+    }
+
+    async function buy(name, price, cat) {
+        await fetch(`${API}/place_order`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({product: name, price: price, category: cat})
+        });
+        alert("✅ Order for " + name + " saved to database!");
+    }
+
+    function loginAdmin() {
+        const pass = prompt("Enter Admin Password:");
+        if(pass === "bapa123") {
+            showView('admin');
+            loadAdminOrders();
+        } else { alert("Unauthorized!"); }
+    }
+
+    function showView(view) {
+        document.getElementById('shop-view').style.display = view === 'shop' ? 'block' : 'none';
+        document.getElementById('admin-view').style.display = view === 'admin' ? 'block' : 'none';
+    }
+
+    async function loadAdminOrders() {
+        const query = document.getElementById('adminSearch').value;
+        const res = await fetch(`${API}/get_orders?search=${query}`);
+        const data = await res.json();
+        const body = document.getElementById('adminTableBody');
+        body.innerHTML = data.map(o => `<tr><td>${o.item}</td><td>₹${o.price}</td><td>${o.cat}</td></tr>`).join('');
+    }
+
+    // Initial Load
+    renderProducts(products);
+</script>
+</body>
+</html>
